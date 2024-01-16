@@ -1,0 +1,234 @@
+import java.util.*;
+
+class BookingSys{
+    public static void main(String[] args) {
+         // We have created ArrayList to store Show details
+        ArrayList<Show> shows = new ArrayList<>();
+        shows.add(new Show("12th Fail", 10));
+        shows.add(new Show("Hanuman", 15));
+        
+         // Here we have created a bookig object for booking
+        Booking booking = new Booking();
+        // For input
+        Scanner scanner = new Scanner(System.in);
+
+        while (true) {
+            System.out.println("\nTicket Booking System");
+            System.out.println("1. View Available Shows");
+            System.out.println("2. Book Ticket");
+            System.out.println("3. Cancel Ticket");
+            System.out.println("4. View Booking Details");
+            System.out.println("5. Exit");
+
+            int choice = scanner.nextInt();
+            
+            // Switch statement for user choices
+            switch (choice) {
+                case 1:
+                    viewAvailableShows(shows);
+                    break;
+                case 2:
+                    bookTicket(shows, booking, scanner);
+                    break;
+                case 3:
+                    cancelTicket(booking, scanner);
+                    break;
+                case 4:
+                    booking.displayBookingDetails();
+                    break;
+                case 5:
+                    System.out.println("Exiting...");
+                    System.exit(0);
+                default:
+                    System.out.println("Invalid choice.");
+            }
+        }
+    }
+
+    // Helper methods for menu options
+
+    // Showing available shows and their tickets
+    private static void viewAvailableShows(ArrayList<Show> shows) {
+        for (Show show : shows) {
+            show.displayTickets();
+        }
+    }
+    
+    // Book a ticket 
+    private static void bookTicket(ArrayList<Show> shows, Booking booking, Scanner scanner) {
+        System.out.print("Enter show name to book: ");
+        String showName = scanner.next();
+
+        Show selectedShow = null;
+        for (Show show : shows) {
+            if (show.getName().equals(showName)) {
+                selectedShow = show;
+                break;
+            }
+        }
+
+        if (selectedShow == null) {
+            System.out.println("Show not found.");
+            return;
+        }
+
+        selectedShow.displayTickets();
+        System.out.print("Enter seat number to book: ");
+        String seatNumber = scanner.next();
+
+        Ticket bookedTicket = selectedShow.bookTicket(seatNumber);
+        if (bookedTicket != null) {
+            booking.bookTicket(bookedTicket);
+        } else {
+            System.out.println("Seat not available or already booked.");
+        }
+    }
+
+    private static void cancelTicket(Booking booking, Scanner scanner) {
+        System.out.print("Enter ticket ID to cancel: ");
+        int ticketId = scanner.nextInt();
+        booking.cancelTicket(ticketId);
+    }
+}
+class Booking {
+    private ArrayList<Ticket> bookedTickets = new ArrayList<>();
+
+    public void bookTicket(Ticket ticket) {
+        bookedTickets.add(ticket);
+        ticket.setBooked(true);
+        System.out.println("Ticket booked successfully!");
+    }
+
+    public void cancelTicket(int ticketId) {
+        for (Ticket ticket : bookedTickets) {
+            if (ticket.getId() == ticketId) {
+                bookedTickets.remove(ticket);
+                ticket.setBooked(false);
+                System.out.println("Ticket cancelled successfully!");
+                return;
+            }
+        }
+        System.out.println("Invalid ticket ID.");
+    }
+
+    public void displayBookingDetails() {
+        System.out.println("Booked Tickets:");
+        for (Ticket ticket : bookedTickets) {
+            System.out.println(ticket.toString()); // Implement toString() in Ticket class
+        }
+    }
+}
+class Show {
+    private String name;
+    private ArrayList<Ticket> tickets = new ArrayList<>();
+
+    public Show(String name, int numTickets) {
+        this.name = name;
+        for (int i = 1; i <= numTickets; i++) {
+            tickets.add(new Ticket(i, name, "S" + i, 50));
+        }
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public ArrayList<Ticket> getAvailableTickets() {
+        ArrayList<Ticket> availableTickets = new ArrayList<>();
+        for (Ticket ticket : tickets) {
+            if (!ticket.isBooked()) {
+                availableTickets.add(ticket);
+            }
+        }
+        return availableTickets;
+    }
+
+    public Ticket bookTicket(String seatNumber) {
+        for (Ticket ticket : tickets) {
+            if (ticket.getSeatNumber().equals(seatNumber) && !ticket.isBooked()) {
+                ticket.setBooked(true);
+                return ticket;
+            }
+        }
+        return null;
+    }
+
+    public void cancelTicket(int ticketId) {
+        for (Ticket ticket : tickets) {
+            if (ticket.getId() == ticketId) {
+                ticket.setBooked(false);
+                System.out.println("Ticket cancelled successfully!");
+                return;
+            }
+        }
+        System.out.println("Invalid ticket ID.");
+    }
+
+    public void displayTickets() {
+        System.out.println("Available Tickets for " + name + ":");
+        for (Ticket ticket : getAvailableTickets()) {
+            System.out.println(ticket.toString());
+        }
+    }
+}
+class Ticket {
+    private int id;
+    private String showName;
+    private String seatNumber;
+    private double price;
+    private boolean booked;
+
+    public Ticket(int id, String showName, String seatNumber, double price) {
+        this.id = id;
+        this.showName = showName;
+        this.seatNumber = seatNumber;
+        this.price = price;
+        this.booked = false;
+    }
+
+    // Getters and setters
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getShowName() {
+        return showName;
+    }
+
+    public void setShowName(String showName) {
+        this.showName = showName;
+    }
+
+    public String getSeatNumber() {
+        return seatNumber;
+    }
+
+    public void setSeatNumber(String seatNumber) {
+        this.seatNumber = seatNumber;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
+    public boolean isBooked() {
+        return booked;
+    }
+
+    public void setBooked(boolean booked) {
+        this.booked = booked;
+    }
+
+    @Override
+    public String toString() {
+        return "Ticket ID: " + id + ", Show: " + showName + ", Seat: " + seatNumber + ", Price: Rs" + price;
+    }
+}
